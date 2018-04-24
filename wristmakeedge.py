@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-im = cv2.imread('Wrist.jpg')
+im = cv2.imread('wrist.jpg')
 edges = cv2.Canny(im,0,50,apertureSize = 3)
 cv2.imwrite('wristedge.jpg',edges)
 
