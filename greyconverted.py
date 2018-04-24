@@ -32,11 +32,11 @@ for i in range(height):
         #greyscale picture so RGB values are all equal
         
         #altering darker pixels
-        if r < 50:
+        if r < 30:
             cp[i,j] = [1,1,1]
 
         #altering lighter pixels
-        if r > 220:
+        if r >= 30:
             cp[i,j] = [255,255,255]
 
 cv2.imwrite('wristaltered.jpg', im2)
