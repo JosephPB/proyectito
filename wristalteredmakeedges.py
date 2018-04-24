@@ -3,7 +3,7 @@ import numpy as np
 
 im = cv2.imread('wristaltered.jpg')
 edges = cv2.Canny(im,0,50,apertureSize = 3)
-cv2.imwrite('wristedge.jpg',edges)
+cv2.imwrite('wristalterededge.jpg',edges)
 
 
 lines = cv2.HoughLines(edges, 1, np.pi/180,300)
@@ -60,7 +60,7 @@ if 0==0:
 
 
     # Save image
-    cv2.imwrite('wristrec.jpg',im)
+    cv2.imwrite('wristalteredrec.jpg',im)
 
 else:
     print ("length of lines is 0")
