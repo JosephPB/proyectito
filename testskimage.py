@@ -2,7 +2,7 @@ from skimage import io
 from skimage import feature
 import matplotlib.pyplot as plt
 
-im = io.imread('test2.jpg')
+im = io.imread('Wrist.jpg')
 edges1 = feature.canny(im, sigma = 0.05)
 edges2 = feature.canny(im, sigma = 0.5)
 edges3 = feature.canny(im, sigma = 1.0)

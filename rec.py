@@ -1,9 +1,29 @@
 import cv2
 import numpy as np
+import argparse
+import glob
 
-img = cv2.imread('test2.jpg')
+def auto_canny(image, sigma=0.33):
+	# compute the median of the single channel pixel intensities
+	v = np.median(image)
+
+	# apply automatic Canny edge detection using the computed median
+	lower = int(max(0, (1.0 - sigma) * v))
+	upper = int(min(255, (1.0 + sigma) * v))
+	edged = cv2.Canny(image, lower, upper)
+	# return the edged image
+	return edged
+
+img = cv2.imread('Wrist.jpg')
+backtorgb = cv2.cvtColor(img,cv2.COLOR_GRAY2RGB)
+cv2.imwrite('color.jpg',backtorgb)
 # Extract edges
-edges = cv2.Canny(img,0,300,apertureSize = 3)
+gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+kernel = np.ones((500, 500), np.uint8)
+closing = cv2.morphologyEx(gray, cv2.MORPH_CLOSE, kernel)
+cv2.imwrite('closing.jpg',closing)
+edges = cv2.Canny(closing,225,250,apertureSize = 3)
+#edges = auto_canny(closing)
 cv2.imwrite('edges.jpg',edges)
 
 # Try to automate threshold to select only three lines,
