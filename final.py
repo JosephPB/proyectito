@@ -2,8 +2,6 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 
-
-
 def condition(xs,ys):
     if(len(ys))==0:
         return True
@@ -16,26 +14,6 @@ def near(a, b, rtol=1e-5, atol=1e-8):
     return abs(a - b) < (atol + rtol * abs(b))
 
 
-
-# True if two lines cross, false if not
-# should check that the three lines we found cross otherwise change threshold
-def crosses(p1i, p1f, p2i, p2f):
-    (x1, y1) = p1i
-    (x2, y2) = p1f
-    (v1, u1) = p2i
-    (v2, u2) = p2f
-
-    (a,b), (c,d) = (x2-x1, u1-u2), (y2-y1, v1-v2)
-    e, f = u1-x1, v1-y1
-    denom = float(a*d - b*c)
-    if near(denom, 0):
-        # parallel
-        return False
-    else:
-        t = (e*d - b*f)/denom
-        s = (a*f - e*c)/denom
-        #return 0<=t<=1 and 0<=s<=1
-        return t,s
 def line_intersection(line1, line2):
     xdiff = (line1[0][0] - line1[1][0], line2[0][0] - line2[1][0])
     ydiff = (line1[0][1] - line1[1][1], line2[0][1] - line2[1][1]) #Typo was here
@@ -53,13 +31,15 @@ def line_intersection(line1, line2):
     return x, y
 
 
-im = cv2.imread('wristaltered.jpg')
-edges = cv2.Canny(im,0,50,apertureSize = 3)
-cv2.imwrite('wristalterededge.jpg',edges)
+im = cv2.imread('wrist.jpg')
+im = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
 
+contrast = cv2.imread('wristaltered.jpg')
 
+gray = cv2.cvtColor(contrast, cv2.COLOR_BGR2GRAY)
+
+edges = cv2.Canny(gray,0,50,apertureSize = 3)
 lines = cv2.HoughLines(edges, 1, np.pi/180,200)
-
 
 # Plot lines on image
 posi = []
@@ -98,15 +78,27 @@ if 0==0:
     for i in range(len(posi)):
         for j in range(i+1, len(posi)):
             px,py = line_intersection([posi[i],posf[i]],[posi[j],posf[j]])
-            pxs.append(int(px))
-            pys.append(int(py))
-            #cv2.circle(im,(int(px),int(py)),300, (0,255,0),2 )
-    
-    cv2.rectangle(im,(pxs[0],pys[0]),(pxs[1],pys[1]),(0,255,0),3)
+            if(( px < im.shape[0]) &( py < im.shape[1])):
+                pxs.append(int(px))
+                pys.append(int(py))
+                cv2.circle(im,(int(px),int(py)),300, (0,255,0),2 )
+        
+    cv2.rectangle(im,(pxs[0],pys[0]),(pxs[1],pys[1]),(0,255,0),10)
     plt.imshow(im)
     plt.show()
     cv2.imwrite('wristalteredrec.jpg',im)
+    print(im.shape)
+    print(pxs)
+    print(pys)
+    crop = im[np.min(pys):np.max(pys),np.min(pxs):np.max(pxs)]
+    plt.imshow(crop)
+    plt.show()
+    cv2.imwrite('crop.jpg',crop)
 
 
 else:
     print ("length of lines is 0")
+
+
+
+
