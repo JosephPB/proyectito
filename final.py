@@ -7,7 +7,7 @@ def condition(xs,ys):
         return True
     else:
         for i in range(len(ys)):
-            if(abs(xs[0] - ys[i][0]) <= 800 and  abs(xs[1] - ys[i][1]) <= 8):
+            if(abs(abs(xs[0]) - abs(ys[i][0])) <= 800 and  abs(xs[1] - ys[i][1]) <= 10):
                 return False
     return True
 def near(a, b, rtol=1e-5, atol=1e-8):
@@ -32,14 +32,18 @@ def line_intersection(line1, line2):
 
 
 im = cv2.imread('wrist.jpg')
-im = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
 
-contrast = cv2.imread('wristaltered.jpg')
+gray = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
 
-gray = cv2.cvtColor(contrast, cv2.COLOR_BGR2GRAY)
+closed = cv2.morphologyEx(gray, cv2.MORPH_CLOSE,
+            np.ones((50,50), np.uint8))
 
-edges = cv2.Canny(gray,0,50,apertureSize = 3)
-lines = cv2.HoughLines(edges, 1, np.pi/180,200)
+
+edges = cv2.Canny(closed,0,50,apertureSize = 3)
+plt.imshow(edges)
+plt.show()
+lines = cv2.HoughLines(edges, 1, np.pi/180,150)
+
 
 # Plot lines on image
 posi = []
@@ -59,6 +63,8 @@ if 0==0:
     for line in valid_lines:
         rho = line[0]
         theta = line[1]
+        print(theta)
+        print(rho)
         a = np.cos(theta)
         b = np.sin(theta)
         x0 = a*rho
@@ -71,6 +77,8 @@ if 0==0:
         posf.append((x2,y2))
         cv2.line(im,(x1,y1),(x2,y2),(0,0,255),8)
 
+    plt.imshow(im)
+    plt.show()
 
    # Save image
     pxs = []
