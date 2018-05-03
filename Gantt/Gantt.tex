@@ -1,0 +1,98 @@
+\documentclass[tikz,convert=false]{standalone}
+
+
+\usepackage{pgfgantt}
+\usepackage{lscape}
+\usetikzlibrary{backgrounds}
+\pagenumbering{gobble}
+
+\begin{document}
+
+
+\begin{ganttchart}[
+vgrid={*{6}{draw=none}, dotted},
+x unit=.45cm,
+y unit title=.9cm,
+y unit chart=.8cm,
+time slot format=isodate,
+time slot format/start date=2018-04-30]{2018-04-30}{2018-06-22}
+
+\ganttset{bar height=.6}
+\gantttitle{Image Segmentation Timeline}{54}\\
+\gantttitlecalendar{week} \\
+\gantttitlecalendar{day} \\
+
+%Data Processing  
+\ganttgroup{Data Processing}{2018-04-30}{2018-05-06} \\
+\ganttbar{Image labelling}{2018-04-30}{2018-05-05} \\
+\ganttbar{Data Augmentation}{2018-05-03}{2018-05-05} \\
+\ganttmilestone{Data Preprocessing}{2018-05-06} \\
+\ganttlink{elem1}{elem3}\ganttlink{elem2}{elem3}
+
+\ganttbar{Collimator Detection}{2018-04-30}{2018-05-09} \\
+
+%Initial Investigations
+\ganttgroup{Initial Investigations}{2018-05-07}{2018-05-20} \\
+\ganttbar[bar/.append style={fill=red}]{Non-ML Methods}{2018-05-07}{2018-05-11} \\
+\ganttbar[bar/.append style={fill=blue}]{Neural Networks / TDs}{2018-05-07}{2018-05-11} \\
+\ganttbar[bar/.append style={fill=blue}]{One-shot Investigation}{2018-05-07}{2018-05-09} \\
+\ganttbar[bar/.append style={fill=blue}]{Basic NN(s) and DT Testing}{2018-05-12}{2018-05-18} \\
+\ganttmilestone{ML Investigation}{2018-05-20} \\
+
+\ganttlink{elem3}{elem6}
+\ganttlink{elem3}{elem7}
+\ganttlink{elem3}{elem8}
+
+\ganttlink{elem7}{elem8}\ganttlink{elem8}{elem9}
+\ganttlink{elem9}{elem10}
+
+%Detailed Exploration
+\ganttgroup{Detailed Exploration}{2018-05-12}{2018-06-03} \\
+\ganttbar[bar/.append style={fill=red}]{Non-ML}{2018-05-12}{2018-05-20} \\
+\ganttmilestone{Non-ML with Full dataset}{2018-05-20} \\
+\ganttbar{Clustering Techniques}{2018-05-21}{2018-05-25} \\
+\ganttbar[bar/.append style={fill=blue}]{NN(s)}{2018-05-21}{2018-06-03} \\
+\ganttbar[bar/.append style={fill=blue}]{DT(s)}{2018-05-21}{2018-06-03} \\
+\ganttmilestone{ML with Full dataset}{2018-06-03} \\
+
+\ganttlink{elem6}{elem12}
+\ganttlink{elem12}{elem13}
+
+\ganttlink{elem14}{elem17}
+\ganttlink{elem15}{elem17}
+\ganttlink{elem16}{elem17}
+
+
+%Fine tuning
+\ganttgroup{Fine Tuning}{2018-06-04}{2018-06-14} \\
+\ganttbar[bar/.append style={fill=red}]{Non-ML}{2018-06-04}{2018-06-08} \\
+\ganttbar[bar/.append style={fill=blue}]{ML}{2018-06-04}{2018-06-08} \\
+\ganttbar{Combing techniques to Tune}{2018-06-11}{2018-06-14} \\
+\ganttmilestone{Fine Tuned and Combined}{2018-06-14} \\
+
+\ganttlink{elem13}{elem19}
+\ganttlink{elem17}{elem20}
+\ganttlink{elem19}{elem21}
+\ganttlink{elem20}{elem21}
+\ganttlink{elem21}{elem22}
+
+%Final Testing
+\ganttgroup{Final Testing and Evaluation}{2018-06-15}{2018-06-22} \\
+\ganttbar{Test and Tune}{2018-06-15}{2018-06-19} \\
+\ganttmilestone{Tested}{2018-06-19} \\
+
+\ganttbar{Project Evaluation}{2018-06-20}{2018-06-22} \\
+\ganttmilestone{Final Evaluation}{2018-06-22} \\
+
+\ganttlink{elem22}{elem24}
+\ganttlink{elem24}{elem25}
+\ganttlink{elem25}{elem26}
+\ganttlink{elem26}{elem27}
+
+\end{ganttchart}
+
+
+
+
+%\end{landscape}
+\end{document}
