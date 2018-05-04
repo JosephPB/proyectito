@@ -24,6 +24,11 @@ def detect(image):
     x_width = np.arange(0,width)
     y_width = savgol_filter(tot_avg_width, window_length=101, polyorder=2, deriv=2)
 
+    plt.plot(x_width,y_width)
+    plt.title('Second derivatives of average intensities by column')
+    plt.savefig('second_column.jpg',dpi = 300)
+    plt.show()
+
     #Over rows
 
     tot_avg_height = np.array([])
@@ -68,7 +73,7 @@ def detect(image):
     plt.plot(line3,x2, color = 'orange')
     plt.plot(line4,x2, color = 'blue')
     plt.imshow(img)
-    plt.savefig('lines.jpg',dpi = 'figure')
+    plt.savefig('lines.jpg',dpi = 300)
     plt.show()
 
 
