@@ -68,7 +68,8 @@ def detect(image):
     plt.plot(line3,x2, color = 'orange')
     plt.plot(line4,x2, color = 'blue')
     plt.imshow(img)
-    #plt.show()
+    plt.savefig('lines.jpg',dpi = 'figure')
+    plt.show()
 
 
     #Crop image
@@ -115,11 +116,11 @@ if __name__ == "__main__":
     rotated = img2.rotate(2)
     rotated.save('rotated.jpg')
     
-    rotated_intensity = detect('rotated.jpg')
-
-    if rotated_intensity > origin_intensity:
-        print('A rotation should be made')
-
-    else:
-        print('Rotating makes it worse')
+#    rotated_intensity = detect('rotated.jpg')
+#
+#    if rotated_intensity > origin_intensity:
+#        print('A rotation should be made')
+#
+#    else:
+#        print('Rotating makes it worse')
     
