@@ -10,6 +10,8 @@ def dark(image):
     '''
     Checks image borders for dark pixels (with an RGB value of less than 20).
     Calculates the ratio of dark pixels to total pixels in border region.
+    Input: Image path
+    Output: Boolean operator for collimation
     '''
 
     img = cv.imread(image)
@@ -37,7 +39,15 @@ def dark(image):
 
     
 def detect(image, write, plot, rotation):
-
+    '''
+    If a collimator is identified, crops image down.
+    Input:
+     - image: input image path
+     - write: write out image path
+     - plot: bool, plot intermediate results (True)
+     - rotation: bool, implement a random rotation on input image
+    '''
+    
     if rotation == True:
         img = Image.open(image)
         rotation = np.random.random()*89
