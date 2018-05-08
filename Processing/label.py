@@ -17,11 +17,9 @@ To reduce memory issues, creates a sub-array which appends to the main array onc
 import cv2 as cv
 import numpy as np
 import sys
+import os
 
-inpt = sys.argv[1]
-output = sys.argv[2]
-
-def GenerateOutput(inpt,output):
+def GenerateOutput(inpt):
 
     image = cv.imread(inpt)
 
@@ -36,15 +34,15 @@ def GenerateOutput(inpt,output):
             b,g,r = image[i,j]
 
             #identify red region
-            if r != 0 and b < 200 and g < 200:
+            if r > 230 and b < 10 and g < 10:
                 otpt = np.append(otpt,2)
 
             #identify cyan region
-            elif b != 0 and g != 0 and r < 220:
+            elif b > 230 and g > 230 and r < 10:
                 otpt = np.append(otpt,1)
                 
             #identify white region    
-            elif r > 220  and g > 220 and b > 220:
+            elif r > 230  and g > 230 and b > 230:
                 otpt = np.append(otpt,0)
 
             #if criterion aren't met, flag error    
@@ -80,9 +78,21 @@ def GenerateOutput(inpt,output):
     
     if len(out[0]) == width and len(out) == height:
         print ('height and width of labels match image dimensions')
-    
-    np.save('{}'.format(output),out)
+
+    out_name = inpt[:-4]
+    np.save('{}'.format(out_name),out)
+    return 0
 
 if __name__ == '__main__':
 
-    GenerateOutput(inpt,output)
+    '''
+    inpt = sys.argv[1]
+            
+    GenerateOutput(inpt)
+    '''
+
+    for file in os.listdir(sys.argv[1]):
+        if file.endswith(".jpg"):
+            directory = os.path.join(sys.argv[1], file)
+            print (directory)
+            GenerateOutput(directory)
