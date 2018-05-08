@@ -5,11 +5,52 @@ from scipy.signal import savgol_filter
 import peakutils
 from PIL import Image
 
-def detect(image):
+def detect(image, plot, rotation):
 
-    img = cv.imread(image)
+    if rotation == True:
+        img = Image.open(image)
+        rotation = np.random.random()*89
+        img = img.rotate(rotation)
+        img.save('rotated.jpg')
+        img = cv.imread('rotated.jpg')
+
+    else:
+        img = cv.imread(image)
+
+    img = img[400:2400,500:2700] #Crop down artificial border
     height,width,depth = img.shape
 
+    #Detect rotation
+    edges = cv.Canny(img, 0, 30, 3)
+    cp2 = np.copy(img) #Create a copy
+
+    lines = cv.HoughLines(edges,50,np.pi/180,1)
+    rho, theta = lines[0][0]
+
+    gradient = np.sin(theta)/np.cos(theta)
+    x = np.linspace(0,-width,width)
+    y = gradient*x
+
+    if plot == True:
+        plt.imshow(cp2)
+        plt.plot(x,y)
+        plt.show()
+
+    #Rotate image back    
+    angle = theta*(180/np.pi)
+    img = Image.open(image)
+    img = img.rotate(rotation)
+    img = img.rotate(angle+180)
+
+    img.save('rotated.jpg')
+    img = cv.imread('rotated.jpg')
+    img = img[400:2400,500:2700]
+
+    if plot == True:
+        plt.imshow(img)
+        plt.show()
+    
+    
     #Averaging over intensities
 
     #Over columns
@@ -24,10 +65,11 @@ def detect(image):
     x_width = np.arange(0,width)
     y_width = savgol_filter(tot_avg_width, window_length=101, polyorder=2, deriv=2)
 
-    plt.plot(x_width,y_width)
-    plt.title('Second derivatives of average intensities by column')
-    plt.savefig('second_column.jpg',dpi = 300)
-    plt.show()
+    if plot == True:
+        plt.plot(x_width,y_width)
+        plt.title('Second derivatives of average intensities by column')
+        plt.savefig('second_column.jpg',dpi = 300)
+        plt.show()
 
     #Over rows
 
@@ -68,13 +110,14 @@ def detect(image):
 
     x1 = np.linspace(0,width,width)
 
-    plt.plot(x1,line1, color = 'red')
-    plt.plot(x1,line2, color = 'green')
-    plt.plot(line3,x2, color = 'orange')
-    plt.plot(line4,x2, color = 'blue')
-    plt.imshow(img)
-    plt.savefig('lines.jpg',dpi = 300)
-    plt.show()
+    if plot == True:
+        plt.plot(x1,line1, color = 'red')
+        plt.plot(x1,line2, color = 'green')
+        plt.plot(line3,x2, color = 'orange')
+        plt.plot(line4,x2, color = 'blue')
+        plt.imshow(img)
+        plt.savefig('lines.jpg',dpi = 300)
+        plt.show()
 
 
     #Crop image
@@ -88,44 +131,13 @@ def detect(image):
     y_corners = np.array([int(line2[0]),int(line1[1])])
 
     crop = img[np.min(y_corners)+50:np.max(y_corners)-50,np.min(x_corners)+50:np.max(x_corners)-50]
-    cv.imwrite('cropped.jpg',crop)
-    
-    plt.imshow(crop)
-    #plt.show()
+    cv.imwrite(image + 'cropped.jpg',crop)
 
-    #Calculate intensity of cropped image
-
-    height,width,depth = crop.shape
-
-    crop_avg_width = np.array([])
-    
-    for i in range(width):
-        avg = np.average(img[:,i])
-        crop_avg_width = np.append(crop_avg_width,avg)
-
-    crop_intensity = np.sum(crop_avg_width)
-
-    return crop_intensity
+    if plot == True:
+        plt.imshow(crop)
 
 
 
 if __name__ == "__main__":
 
-    origin_intensity = detect('wrist.jpg')
-
-    
-    #Try a rotation
-
-    img2 = Image.open('wrist.jpg')
-
-    rotated = img2.rotate(2)
-    rotated.save('rotated.jpg')
-    
-#    rotated_intensity = detect('rotated.jpg')
-#
-#    if rotated_intensity > origin_intensity:
-#        print('A rotation should be made')
-#
-#    else:
-#        print('Rotating makes it worse')
-    
+    detect('wrist.jpg')
