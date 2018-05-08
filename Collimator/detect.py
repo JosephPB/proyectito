@@ -4,12 +4,98 @@ import numpy as np
 from scipy.signal import savgol_filter
 import peakutils
 from PIL import Image
+import sys
 
-def detect(image):
+def dark(image):
+    '''
+    Checks image borders for dark pixels (with an RGB value of less than 20).
+    Calculates the ratio of dark pixels to total pixels in border region.
+    Input: Image path
+    Output: Boolean operator for collimation
+    '''
 
     img = cv.imread(image)
+    cp = np.copy(img)
+    cp[cp<100] = 1
+    cp[cp>150] = 255
+
+    height,width,depth = cp.shape
+    num_dark_left = np.count_nonzero(cp[:,0:width/10] < [20])/3
+    num_dark_right = np.count_nonzero(cp[:,-width/10:width] < [20])/3
+    num_dark_top = np.count_nonzero(cp[0:height/10,:] < [20])/3
+    num_dark_bottom = np.count_nonzero(cp[-height/10:height,:] < [20])/3
+    num_dark = num_dark_left+num_dark_right+num_dark_bottom+num_dark_top
+    
+    total = (width/10)*height*2 + (height/10)*width*2
+    
+    ratio = (float(num_dark)/float(total))
+
+    if ratio > 0.6:
+        print ('image collimated')
+        return True
+    
+    else: 
+        print False
+
+    
+def detect(image, write, plot, rotation):
+    '''
+    If a collimator is identified, crops image down.
+    Input:
+     - image: input image path
+     - write: write out image path
+     - plot: bool, plot intermediate results (True)
+     - rotation: bool, implement a random rotation on input image
+    '''
+    
+    if rotation == True:
+        img = Image.open(image)
+        rotation = np.random.random()*89
+        img = img.rotate(rotation)
+        img.save('rotated.jpg')
+        img = cv.imread('rotated.jpg')
+
+        if plot == True:
+            plt.imshow(img)
+            plt.show()
+
+    else:
+        img = cv.imread(image)
+
+    img = img[400:2400,500:2700] #Crop down artificial border
     height,width,depth = img.shape
 
+    #Detect rotation
+    edges = cv.Canny(img, 0, 30, 3)
+    cp2 = np.copy(img) #Create a copy
+
+    lines = cv.HoughLines(edges,50,np.pi/180,1)
+    rho, theta = lines[0][0]
+
+    gradient = np.sin(theta)/np.cos(theta)
+    x = np.linspace(0,-width,width)
+    y = gradient*x
+
+    if plot == True:
+        plt.imshow(cp2)
+        plt.plot(x,y)
+        plt.show()
+
+    #Rotate image back    
+    angle = theta*(180/np.pi)
+    img = Image.open(image)
+    img = img.rotate(rotation)
+    img = img.rotate(angle+180)
+
+    img.save('rotated.jpg')
+    img = cv.imread('rotated.jpg')
+    img = img[400:2400,500:2700]
+
+    if plot == True:
+        plt.imshow(img)
+        plt.show()
+    
+    
     #Averaging over intensities
 
     #Over columns
@@ -24,10 +110,11 @@ def detect(image):
     x_width = np.arange(0,width)
     y_width = savgol_filter(tot_avg_width, window_length=101, polyorder=2, deriv=2)
 
-    plt.plot(x_width,y_width)
-    plt.title('Second derivatives of average intensities by column')
-    plt.savefig('second_column.jpg',dpi = 300)
-    plt.show()
+    if plot == True:
+        plt.plot(x_width,y_width)
+        plt.title('Second derivatives of average intensities by column')
+        plt.savefig('second_column.jpg',dpi = 300)
+        plt.show()
 
     #Over rows
 
@@ -68,13 +155,14 @@ def detect(image):
 
     x1 = np.linspace(0,width,width)
 
-    plt.plot(x1,line1, color = 'red')
-    plt.plot(x1,line2, color = 'green')
-    plt.plot(line3,x2, color = 'orange')
-    plt.plot(line4,x2, color = 'blue')
-    plt.imshow(img)
-    plt.savefig('lines.jpg',dpi = 300)
-    plt.show()
+    if plot == True:
+        plt.plot(x1,line1, color = 'red')
+        plt.plot(x1,line2, color = 'green')
+        plt.plot(line3,x2, color = 'orange')
+        plt.plot(line4,x2, color = 'blue')
+        plt.imshow(img)
+        plt.savefig('lines.jpg',dpi = 300)
+        plt.show()
 
 
     #Crop image
@@ -88,44 +176,18 @@ def detect(image):
     y_corners = np.array([int(line2[0]),int(line1[1])])
 
     crop = img[np.min(y_corners)+50:np.max(y_corners)-50,np.min(x_corners)+50:np.max(x_corners)-50]
-    cv.imwrite('cropped.jpg',crop)
-    
-    plt.imshow(crop)
-    #plt.show()
+    cv.imwrite(write + 'cropped.jpg',crop)
 
-    #Calculate intensity of cropped image
-
-    height,width,depth = crop.shape
-
-    crop_avg_width = np.array([])
-    
-    for i in range(width):
-        avg = np.average(img[:,i])
-        crop_avg_width = np.append(crop_avg_width,avg)
-
-    crop_intensity = np.sum(crop_avg_width)
-
-    return crop_intensity
+    if plot == True:
+        plt.imshow(crop)
 
 
 
 if __name__ == "__main__":
 
-    origin_intensity = detect('wrist.jpg')
+#    detect('/media/sf_TestImageDataBase/rectangle/jpeg_converted/NeckofFemur.jpg',True,False)
 
-    
-    #Try a rotation
+    collimated = dark(sys.argv[1])
 
-    img2 = Image.open('wrist.jpg')
-
-    rotated = img2.rotate(2)
-    rotated.save('rotated.jpg')
-    
-#    rotated_intensity = detect('rotated.jpg')
-#
-#    if rotated_intensity > origin_intensity:
-#        print('A rotation should be made')
-#
-#    else:
-#        print('Rotating makes it worse')
-    
+    if collimated == True:
+        detect(sys.argv[1],sys.argv[2],False,True)
