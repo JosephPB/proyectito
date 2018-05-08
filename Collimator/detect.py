@@ -4,8 +4,39 @@ import numpy as np
 from scipy.signal import savgol_filter
 import peakutils
 from PIL import Image
+import sys
 
-def detect(image, plot, rotation):
+def dark(image):
+    '''
+    Checks image borders for dark pixels (with an RGB value of less than 20).
+    Calculates the ratio of dark pixels to total pixels in border region.
+    '''
+
+    img = cv.imread(image)
+    cp = np.copy(img)
+    cp[cp<100] = 1
+    cp[cp>150] = 255
+
+    height,width,depth = cp.shape
+    num_dark_left = np.count_nonzero(cp[:,0:width/10] < [20])/3
+    num_dark_right = np.count_nonzero(cp[:,-width/10:width] < [20])/3
+    num_dark_top = np.count_nonzero(cp[0:height/10,:] < [20])/3
+    num_dark_bottom = np.count_nonzero(cp[-height/10:height,:] < [20])/3
+    num_dark = num_dark_left+num_dark_right+num_dark_bottom+num_dark_top
+    
+    total = (width/10)*height*2 + (height/10)*width*2
+    
+    ratio = (float(num_dark)/float(total))
+
+    if ratio > 0.6:
+        print ('image collimated')
+        return True
+    
+    else: 
+        print False
+
+    
+def detect(image, write, plot, rotation):
 
     if rotation == True:
         img = Image.open(image)
@@ -13,6 +44,10 @@ def detect(image, plot, rotation):
         img = img.rotate(rotation)
         img.save('rotated.jpg')
         img = cv.imread('rotated.jpg')
+
+        if plot == True:
+            plt.imshow(img)
+            plt.show()
 
     else:
         img = cv.imread(image)
@@ -131,7 +166,7 @@ def detect(image, plot, rotation):
     y_corners = np.array([int(line2[0]),int(line1[1])])
 
     crop = img[np.min(y_corners)+50:np.max(y_corners)-50,np.min(x_corners)+50:np.max(x_corners)-50]
-    cv.imwrite(image + 'cropped.jpg',crop)
+    cv.imwrite(write + 'cropped.jpg',crop)
 
     if plot == True:
         plt.imshow(crop)
@@ -140,4 +175,9 @@ def detect(image, plot, rotation):
 
 if __name__ == "__main__":
 
-    detect('wrist.jpg')
+#    detect('/media/sf_TestImageDataBase/rectangle/jpeg_converted/NeckofFemur.jpg',True,False)
+
+    collimated = dark(sys.argv[1])
+
+    if collimated == True:
+        detect(sys.argv[1],sys.argv[2],False,True)
