@@ -3,14 +3,12 @@ Writes hdf5 file from data and labels folders into an hdf5 file.
 
 How to use:
 
-    python generate_data.py -aug True -naug 100 -imsize 200 -h5name test
+    python generate_data.py -Naug 100 -imsize 200 -h5name test
 
 Output:
     hdf5 file splitted into train, test and validation
 
 """
-
-
 
 from __future__ import division
 from sklearn.model_selection import train_test_split
@@ -20,8 +18,8 @@ import matplotlib.pyplot as plt
 from IPython.display import clear_output
 import imgaug as ia
 from imgaug import augmenters as iaa
-import rasterio
 from imgaug import parameters as iap
+import rasterio
 import create_h5
 import cv2
 import glob
@@ -32,11 +30,9 @@ import argparse
 
 # Define command line arguments
 parser = argparse.ArgumentParser(description='Save training images and labels in a hdf5 file.')
-parser.add_argument('-aug', dest='augment', type=bool, default=False,
-                   help='If True, augmentation on image is performed.')
 
-parser.add_argument('-naug', dest='EXAMPLES_PER_CATEGORY', type=int, default=0,
-                   help='Number of total images per bodypart.')
+parser.add_argument('-Naug', dest='EXAMPLES_PER_CATEGORY', type=int, default=0,
+                   help='Augment every bodypart to Naug images.')
 
 parser.add_argument('-imsize', dest='image_size', type=int, default=200, 
                    help='Size of final images.')
@@ -45,13 +41,10 @@ parser.add_argument('-h5name', dest='hdf5_name', type=str,
                    help='Name of hdf5 output file.')
 
 
-
-
-
 args = parser.parse_args()
 
 
-if(args.augment == False):
+if(args.Naug == 0):
     hdf5_path = '/media/sf_training/hdf5/'+args.hdf5_name + '.hdf5'
 else:
     hdf5_path = '/media/sf_training/hdf5/'+args.hdf5_name +'_'+ str(args.EXAMPLES_PER_CATEGORY)+'.hdf5'
@@ -108,7 +101,7 @@ for i in range(len(images)):
 
 
 
-if(args.augment == False):
+if(args.Naug == 0):
     create_h5.write_h5(hdf5_path, images_read,labels_read)
 else:
 
