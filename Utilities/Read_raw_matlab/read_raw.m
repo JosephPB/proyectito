@@ -1,5 +1,4 @@
-filepath ="X:\Raw_Data\Critical_Raw_Data\All NSTC Data\NSTC 05-06-17\ProcessedData\Knee\Knee 75kV No MAP ASG 6p4mAs 105cm\B_ (1).raw"
-
+filepath = "X:\Raw_Data\Critical_Raw_Data\All NSTC Data\Complete NSTC Data October 2016\Wednesday 26th October\BMD Training Database 60kV\Patient 1 Left Wrist\I2mAs1.raw"
 
 raw_file_header(1).Type = temp{1};
 raw_file_header(1).Rows = str2double( temp{2} );
