@@ -5,6 +5,7 @@ from scipy.signal import savgol_filter
 import peakutils
 from PIL import Image
 import sys
+import os
 
 def dark(image):
     '''
@@ -66,7 +67,7 @@ def detect(image, write, plot, rotation):
     height,width,depth = img.shape
 
     #Detect rotation
-    edges = cv.Canny(img, 0, 30, 3)
+    edges = cv.Canny(img, 0, 50, 3)
     cp2 = np.copy(img) #Create a copy
 
     lines = cv.HoughLines(edges,50,np.pi/180,1)
@@ -187,7 +188,18 @@ if __name__ == "__main__":
 
 #    detect('/media/sf_TestImageDataBase/rectangle/jpeg_converted/NeckofFemur.jpg',True,False)
 
+    '''
     collimated = dark(sys.argv[1])
 
     if collimated == True:
         detect(sys.argv[1],sys.argv[2],False,True)
+    '''
+
+    for file in os.listdir(sys.argv[1]):
+        if file.endswith(".jpg"):
+            directory = os.path.join(sys.argv[1], file)
+            print (directory)
+            collimated = dark(directory)
+            if collimated == True:
+                write_to = os.path.join(sys.argv[1],file[:-3])
+                detect(directory,write_to,False,True)
