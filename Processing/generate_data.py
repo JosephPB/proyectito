@@ -26,6 +26,9 @@ import glob
 from random import shuffle
 import h5py
 import argparse
+import label as label_generate
+import onehot
+import scipy.misc
 
 
 # Define command line arguments
@@ -44,21 +47,32 @@ parser.add_argument('-h5name', dest='hdf5_name', type=str,
 args = parser.parse_args()
 
 
-if(args.Naug == 0):
+if(args.EXAMPLES_PER_CATEGORY == 0):
     hdf5_path = '/media/sf_training/hdf5/'+args.hdf5_name + '.hdf5'
 else:
     hdf5_path = '/media/sf_training/hdf5/'+args.hdf5_name +'_'+ str(args.EXAMPLES_PER_CATEGORY)+'.hdf5'
 
 data_path = '/media/sf_training/data/*.tif'
-labels_path = '/media/sf_training/labels/*.jpg'
+labels_path = '/media/sf_training/labels/OneHot/*.npy'
 
 
 images = glob.glob(data_path)
 labels =  glob.glob(labels_path)
 
 
+print('Checking if number of labeled files matches number of data image files....')
 # Check that number of labels corresponds to number of images
 assert len(labels) == len(images)
+
+print('Check that labels match data ....')
+# Check that they have the same names
+for (i, img) in enumerate(images):
+    label_filename = labels[i].split('/')[-1].split('.')[0] 
+    img_filename  = img.split('/')[-1].split('.')[0] + 'onehot'
+
+    assert label_filename == img_filename
+
+print('Names of labels and data match perfectly, good job :)')
 
 #shuffle data
 c = list(zip(images,labels))
@@ -68,7 +82,7 @@ images, labels = zip(*c)
 
 # Read and save all images + labels + bodypart
 
-images_read = np.zeros((len(images),args.image_size,args.image_size,1))
+images_read = np.zeros((len(images),args.image_size,args.image_size,1),dtype=np.float32)
 labels_read = np.zeros((len(labels), args.image_size, args.image_size,3))
 bodyparts = np.empty((len(images)),'S10')
 for i in range(len(images)):
@@ -77,10 +91,21 @@ for i in range(len(images)):
     img = img.read(1)
     images_read[i,...,0] = cv2.resize(img, (args.image_size, args.image_size), interpolation=cv2.INTER_CUBIC)
     # Normalize images from 0 to 1
-    images_read[i,...,0] /= np.max(images_read[i,...,0])
+    #images_read[i,...,0] /= np.max(images_read[i,...,0])
     label_filename = labels[i]
-    label = cv2.imread(label_filename)
-    labels_read[i,...] = cv2.resize(label, (args.image_size, args.image_size), interpolation=cv2.INTER_CUBIC)
+    #label = cv2.imread(label_filename)
+        #labels_read[i,...] = cv2.resize(label, (args.image_size, args.image_size), interpolation=cv2.INTER_NEAREST)
+    #labels_read[i,...] = scipy.misc.imresize(label, (args.image_size, args.image_size,3), interp= 'nearest', mode=None)
+   
+    #label_onehot = label_generate.GenerateOutput(label)
+
+    #label_onehot = onehot.OneHot(label_onehot)
+
+    label_onehot = np.load(label_filename)
+
+    labels_read[i,...] = scipy.misc.imresize(label_onehot, (args.image_size,args.image_size,3), interp='nearest', mode=None)
+
+
     bodypart = filename.split('/')[-1].split('_')[0].lower()
     if((bodypart == 'left') or (bodypart == 'right') or (bodypart == 'asg')):
         bodypart = filename.split('/')[-1].split('_')[1]
@@ -101,10 +126,9 @@ for i in range(len(images)):
 
 
 
-if(args.Naug == 0):
+if(args.EXAMPLES_PER_CATEGORY == 0):
     create_h5.write_h5(hdf5_path, images_read,labels_read)
 else:
-
     unique, counts = np.unique(bodyparts, return_counts=True)
     unique_per_category = dict(zip(unique, counts))
     print(unique_per_category)
@@ -112,6 +136,11 @@ else:
     for key in unique_per_category:
         augmentations_per_category[key] = int(args.EXAMPLES_PER_CATEGORY/unique_per_category[key])
     print(augmentations_per_category)
+    
+
+    print('type is')
+    print(type(images_read[0,0,0,0]))
+    #Augmentation templates
     translate_max = 0.1
     rotate_max = 45
     shear_max = 10
@@ -121,13 +150,13 @@ else:
                                   rotate=(-rotate_max, rotate_max), # rotate by -rotate_max to +rotate_max degrees
                                   shear=(-shear_max, shear_max), # shear by -shear_max to +shear_max degrees
                                   order=[0, 1], # use nearest neighbour or bilinear interpolation (fast)
-                                  cval=(0, 1), # if mode is constant, use a cval between 0 and 255
+                                  cval=0, # if mode is constant, use a cval between 0 and 255
                                   mode="edge",
                                   name="Affine",
                                  )
 
-    spatial_aug = iaa.Sequential([iaa.Fliplr(0.5), iaa.Flipud(0.5), iaa.Crop(percent=(0, 0.2)),affine_trasform,\
-                                  iaa.PiecewiseAffine(scale=(0.01, 0.01)),iaa.PerspectiveTransform(scale=(0.1, 0.1))])
+    spatial_aug = iaa.Sequential([iaa.Crop(percent=(0, 0.2)),iaa.Fliplr(0.5), iaa.Flipud(0.5), affine_trasform])
+
     other_aug = iaa.SomeOf((0, None),
             [
                 iaa.OneOf([
@@ -143,10 +172,13 @@ else:
                 ]),
 
             ])
+
+            
+
     augmentator = [spatial_aug,other_aug]
     total_images=sum(augmentations_per_category[k]*unique_per_category[k] for k in augmentations_per_category)
-    images_aug = np.zeros((total_images,image_shape,image_shape,1))
-    labels_aug = np.zeros((total_images,image_shape,image_shape,3))
+    images_aug = np.zeros((total_images,images_read.shape[1],images_read.shape[2],images_read.shape[3]))
+    labels_aug = np.zeros((total_images,labels_read.shape[1],labels_read.shape[2],labels_read.shape[3]))
     bodypart = np.empty((total_images),dtype = 'S10')
     # Loop  over the different kind of bodyparts
     counter = 0
@@ -164,9 +196,10 @@ else:
                 # Freeze randomization to apply same to labels
                 spatial_det = augmentator[0].to_deterministic() 
                 other_det = augmentator[1]
-                images_aug[counter,...] = spatial_det.augment_image(images_read[j,...])
+                images_aug[counter,...] = spatial_det.augment_image(images_read[j])
                 images_aug[counter,...] = other_det.augment_image(images_aug[counter,...])
-                labels_aug[counter,...] = spatial_det.augment_image(labels_read[j,...])
+                labels_aug[counter,...] = spatial_det.augment_image(labels_read[j])
+                labels_aug[counter,...] = np.rint(labels_aug[counter,...]/255)
 
                 bodypart[counter] = k
                 print('(Category %s) processing image %i/%i, augmented image %i/%i'%(k,counter_block ,
@@ -175,5 +208,4 @@ else:
                 counter +=1
                 
     print('Finished playing with cadavers ! ')
-    create_h5.write_h5(hdf5_path, images_aug,labels_aug)
-        
+    create_h5.write_h5(hdf5_path, images_aug,labels_aug)   
