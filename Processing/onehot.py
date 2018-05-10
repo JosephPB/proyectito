@@ -13,7 +13,7 @@ def OneHot(a):
     b = b.reshape((height,width,a.max()+1))
     return b
 
-
+'''
 for file in os.listdir(sys.argv[1]):
     if file.endswith(".npy"):
         directory = os.path.join(sys.argv[1], file)
@@ -21,3 +21,4 @@ for file in os.listdir(sys.argv[1]):
         mat = OneHot(inpt)
         out_name = directory[:-4]    
         np.save('{}'.format(out_name + 'onehot'),mat)
+'''
