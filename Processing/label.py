@@ -19,9 +19,9 @@ import numpy as np
 import sys
 import os
 
-def GenerateOutput(inpt):
+def GenerateOutput(image):
 
-    image = cv.imread(inpt)
+    #image = cv.imread(inpt)
 
     otpt = np.array([]) #sub-array
     out = np.array([]) #main output array
@@ -34,15 +34,15 @@ def GenerateOutput(inpt):
             b,g,r = image[i,j]
 
             #identify red region
-            if r > 230 and b < 10 and g < 10:
+            if r > 220 and b < 30 and g < 30:
                 otpt = np.append(otpt,2)
 
             #identify cyan region
-            elif b > 230 and g > 230 and r < 10:
+            elif b > 220 and g > 220 and r < 30:
                 otpt = np.append(otpt,1)
                 
             #identify white region    
-            elif r > 230  and g > 230 and b > 230:
+            elif r > 220  and g > 220 and b > 220:
                 otpt = np.append(otpt,0)
 
             #if criterion aren't met, flag error    
@@ -59,7 +59,7 @@ def GenerateOutput(inpt):
                 otpt = np.array([])
                 counter = 0                
                 
-        print ('appended line {} of {}'.format(i,height))
+        #print ('appended line {} of {}'.format(i,height))
 
     #if total pixel no is a multiple of 100
     if len(otpt) != 0:    
@@ -70,19 +70,18 @@ def GenerateOutput(inpt):
     red = np.count_nonzero(out == 2)
     cyan = np.count_nonzero(out == 1)
     white = height*width - (red+cyan) 
-    print ('{} red pixels classified'.format(red))
-    print ('{} cyan pixels classified'.format(cyan))
-    print ('{} white pixels classified'.format(white))
+    #print ('{} red pixels classified'.format(red))
+    #print ('{} cyan pixels classified'.format(cyan))
+    #print ('{} white pixels classified'.format(white))
 
     out = np.reshape(out,(height,width))
     
     if len(out[0]) == width and len(out) == height:
         print ('height and width of labels match image dimensions')
 
-    out_name = inpt[:-4]
-    np.save('{}'.format(out_name),out)
-    return 0
+    return out 
 
+"""
 if __name__ == '__main__':
 
     '''
@@ -96,3 +95,4 @@ if __name__ == '__main__':
             directory = os.path.join(sys.argv[1], file)
             print (directory)
             GenerateOutput(directory)
+"""

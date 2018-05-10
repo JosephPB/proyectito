@@ -7,6 +7,8 @@ from random import shuffle
 from IPython.display import clear_output
 import h5py
 from sklearn.model_selection import train_test_split
+import label as label_generate
+import onehot
 
 
 def write_h5(hdf5_name,images,labels):
@@ -44,7 +46,10 @@ def write_h5(hdf5_name,images,labels):
             hdf5_file[categories[j] + '_img'][i, ...] = img
 
             # same for labels
-            hdf5_file[categories[j] + "_label"][i, ...] = labels_split[j][i,...]    
+            #labels_simple = label_generate.GenerateOutput(labels_split[j][i,...])
+            #labels_onehot = onehot.OneHot(labels_simple)
+            #hdf5_file[categories[j] + "_label"][i, ...] = labels_onehot    
+            hdf5_file[categories[j] + "_label"][i, ...] = labels_split[j][i,...] 
             print('Saving image %i/%i in %s path' %(i+1,images_split[j].shape[0], categories[j]))
 
     hdf5_file.close() 
