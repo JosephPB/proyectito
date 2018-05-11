@@ -29,8 +29,10 @@ import argparse
 import label as label_generate
 import onehot
 import scipy.misc
+from shutil import copyfile
 
 
+main_path = 'X:\company-public\Projects - Internal IBEX projects\ImageSegmentationCTD\TestImageDataBase\\training\\'
 # Define command line arguments
 parser = argparse.ArgumentParser(description='Save training images and labels in a hdf5 file.')
 
@@ -48,17 +50,20 @@ args = parser.parse_args()
 
 
 if(args.EXAMPLES_PER_CATEGORY == 0):
-    hdf5_path = '/media/sf_training/hdf5/'+args.hdf5_name + '.hdf5'
+    hdf5_name = args.hdf5_name + '.hdf5'
+    #hdf5_name = '/media/sf_training/hdf5/'+args.hdf5_name + '.hdf5'
 else:
-    hdf5_path = '/media/sf_training/hdf5/'+args.hdf5_name +'_'+ str(args.EXAMPLES_PER_CATEGORY)+'.hdf5'
+    hdf5_name = args.hdf5_name +'_'+ str(args.EXAMPLES_PER_CATEGORY)+ '.hdf5'
+    #hdf5_name = '/media/sf_training/hdf5/'+args.hdf5_name +'_'+ str(args.EXAMPLES_PER_CATEGORY)+'.hdf5'
 
-data_path = '/media/sf_training/data/*.tif'
-labels_path = '/media/sf_training/labels/OneHot/*.npy'
+#data_path = '/media/sf_training/data/*.tif'
+#labels_path = '/media/sf_training/labels/OneHot/*.npy'
 
+data_path = main_path + 'data\*.tif'
+labels_path = main_path + 'labels\Images\*hot.npy'
 
 images = glob.glob(data_path)
 labels =  glob.glob(labels_path)
-
 
 print('Checking if number of labeled files matches number of data image files....')
 # Check that number of labels corresponds to number of images
@@ -67,9 +72,8 @@ assert len(labels) == len(images)
 print('Check that labels match data ....')
 # Check that they have the same names
 for (i, img) in enumerate(images):
-    label_filename = labels[i].split('/')[-1].split('.')[0] 
-    img_filename  = img.split('/')[-1].split('.')[0] + 'onehot'
-
+    label_filename = labels[i].split('\\')[-1].split('.')[0] 
+    img_filename  = img.split('\\')[-1].split('.')[0] + 'onehot'
     assert label_filename == img_filename
 
 print('Names of labels and data match perfectly, good job :)')
@@ -106,13 +110,13 @@ for i in range(len(images)):
     labels_read[i,...] = scipy.misc.imresize(label_onehot, (args.image_size,args.image_size,3), interp='nearest', mode=None)
 
 
-    bodypart = filename.split('/')[-1].split('_')[0].lower()
+    bodypart = filename.split('\\')[-1].split('_')[0].lower()
     if((bodypart == 'left') or (bodypart == 'right') or (bodypart == 'asg')):
-        bodypart = filename.split('/')[-1].split('_')[1]
+        bodypart = filename.split('\\')[-1].split('_')[1]
         if(bodypart == 'fractured'):
-            bodypart = filename.split('/')[-1].split('_')[2]
+            bodypart = filename.split('\\')[-1].split('_')[2]
         if(bodypart == 'lower'):
-            bodypart = filename.split('/')[-1].split('_')[2]
+            bodypart = filename.split('\\')[-1].split('_')[2]
         
     # Remove numbers
     bodypart = ''.join(i for i in bodypart if not i.isdigit())
@@ -127,7 +131,7 @@ for i in range(len(images)):
 
 
 if(args.EXAMPLES_PER_CATEGORY == 0):
-    create_h5.write_h5(hdf5_path, images_read,labels_read)
+    create_h5.write_h5(hdf5_name, images_read,labels_read)
 else:
     unique, counts = np.unique(bodyparts, return_counts=True)
     unique_per_category = dict(zip(unique, counts))
@@ -208,4 +212,6 @@ else:
                 counter +=1
                 
     print('Finished playing with cadavers ! ')
-    create_h5.write_h5(hdf5_path, images_aug,labels_aug)   
+    create_h5.write_h5(hdf5_name, images_aug,labels_aug)
+copyfile(hdf5_name, main_path + 'hdf5\\' + hdf5_name)
+os.remove(hdf5_name)
