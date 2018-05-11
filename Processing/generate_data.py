@@ -48,13 +48,17 @@ args = parser.parse_args()
 
 
 if(args.EXAMPLES_PER_CATEGORY == 0):
-    hdf5_path = '/media/sf_training/hdf5/'+args.hdf5_name + '.hdf5'
+    hdf5_path = 'X:\company-public\Projects-InternalIBEXprojects\ImageSegmentationCTD\TestImageDataBase\training\hdf5\\'+args.hdf5_name + '.hdf5'
+    #hdf5_path = '/media/sf_training/hdf5/'+args.hdf5_name + '.hdf5'
 else:
-    hdf5_path = '/media/sf_training/hdf5/'+args.hdf5_name +'_'+ str(args.EXAMPLES_PER_CATEGORY)+'.hdf5'
+    hdf5_path = 'X:\company-public\Projects-InternalIBEXprojects\ImageSegmentationCTD\TestImageDataBase\training\hdf5\\'+args.hdf5_name +'_'+ str(args.EXAMPLES_PER_CATEGORY)+ '.hdf5'
+    #hdf5_path = '/media/sf_training/hdf5/'+args.hdf5_name +'_'+ str(args.EXAMPLES_PER_CATEGORY)+'.hdf5'
 
-data_path = '/media/sf_training/data/*.tif'
-labels_path = '/media/sf_training/labels/OneHot/*.npy'
+#data_path = '/media/sf_training/data/*.tif'
+#labels_path = '/media/sf_training/labels/OneHot/*.npy'
 
+data_path = 'X:\company-public\Projects-InternalIBEXprojects\ImageSegmentationCTD\TestImageDataBase\training\data\*.tif'
+labels_path = 'X:\company-public\Projects-InternalIBEXprojects\ImageSegmentationCTD\TestImageDataBase\training\labels\OneHot\*.npy'
 
 images = glob.glob(data_path)
 labels =  glob.glob(labels_path)
