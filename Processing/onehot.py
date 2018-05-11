@@ -17,6 +17,7 @@ def OneHot(a):
 for file in os.listdir(sys.argv[1]):
     if file.endswith(".npy"):
         directory = os.path.join(sys.argv[1], file)
+        print (directory)
         inpt = np.load(directory)
         mat = OneHot(inpt)
         out_name = directory[:-4]    
